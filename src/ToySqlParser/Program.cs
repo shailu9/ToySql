@@ -2,7 +2,7 @@
 using ToySqlParser.Lexer;
 using ToySqlParser.Parser;
 
-var lexer = new Lexer("SELECT id,name FROM users WHERE id = 5 AND age = 10");
+var lexer = new Lexer("SELECT name FROM users WHERE id = 5");
 var parser = new Parser(lexer);
 var ast = parser.Parse();
 

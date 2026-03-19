@@ -10,6 +10,7 @@ public enum TokenType
     Keyword,
     Symbol,
     NumericLiteral,
+    StringLiteral,
     EndOfFile
 }
 
@@ -46,6 +47,24 @@ public class Lexer
 
         char current = _input[_position];
 
+        // Handle single quotes
+        if(current == '\'')
+        {
+            _position++; // skip the opening quote
+            int start = _position;
+
+            while(_position < _input.Length && _input[_position]!= '\'')
+                _position++;
+            
+            if(_position >= _input.Length)
+                throw new Exception("Unterminated string literal");
+            
+            string value = _input[start.._position];
+            _position++; // skip the closing quote
+
+            return new Token(TokenType.StringLiteral,value);
+        } 
+        // Handle words
         if (char.IsLetter(current))
         {
             int start = _position;
@@ -54,18 +73,18 @@ public class Lexer
 
             string word = _input[start.._position];
             var upper = word.ToUpper();
-            if (upper is "SELECT" or "FROM" or "WHERE")
+            if (upper is "SELECT" or "FROM" or "WHERE" or "AND" or "OR")
                 return new Token(TokenType.Keyword, upper);
 
             return new Token(TokenType.Identifier, word);
         }
 
+        // Handle Symbols
         if (current is '*' or ',' or '=')
         {
             _position++;
             return new Token(TokenType.Symbol, current.ToString());
         }
-
 
         // Handle Numbers (Literals)
         if (char.IsDigit(current))

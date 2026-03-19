@@ -1,4 +1,4 @@
-﻿using ToySqlParser.Lexer;
+using ToySqlParser.Lexer;
 using ToySqlParser.Parser.AST;
 
 namespace ToySqlParser.Parser;
@@ -39,7 +39,7 @@ public class Parser
 
         Consume(TokenType.Keyword, "FROM");
         var tabletoken = Consume(TokenType.Identifier);
-        var table = _current.Value;
+        var table = tabletoken.Value;
 
         Expression? where = null;
         if (Match(TokenType.Keyword, "WHERE"))
@@ -47,6 +47,10 @@ public class Parser
             Consume(TokenType.Keyword, "WHERE");
             where = ParseExpression();
         }
+
+        if (!Match(TokenType.EndOfFile))
+            throw new Exception($"Unexpected token: {_current.Type} {_current.Value}");
+
         return new SelectStatement(columns, table, where);
     }
 
@@ -92,14 +96,53 @@ public class Parser
             var value = Consume(TokenType.NumericLiteral).Value;
             return new LiteralExpression(value);
         }
+
+        if (Match(TokenType.StringLiteral))
+        {
+            var value = Consume(TokenType.StringLiteral).Value;
+            return new LiteralExpression(value);
+        }
         throw new Exception($"Unexpected token: {_current.Type} {_current.Value}");
     }
 
     private Expression ParseExpression()
     {
+        return ParseOrExpression();
+    }
+
+    private Expression ParseOrExpression()
+    {
+        var left = ParseAndExpression();
+
+        while (Match(TokenType.Keyword, "OR"))
+        {
+            var op = Consume(TokenType.Keyword, "OR").Value;
+            var right = ParseAndExpression();
+            left = new BinaryExpression(left, op, right);
+        }
+
+        return left;
+    }
+
+    private Expression ParseAndExpression()
+    {
+        var left = ParseComparisonExpression();
+
+        while (Match(TokenType.Keyword, "AND"))
+        {
+            var op = Consume(TokenType.Keyword, "AND").Value;
+            var right = ParseComparisonExpression();
+            left = new BinaryExpression(left, op, right);
+        }
+
+        return left;
+    }
+
+    private Expression ParseComparisonExpression()
+    {
         var left = ParsePrimary();
 
-        if (Match(TokenType.Symbol))
+        if (Match(TokenType.Symbol) && Operators.GetAllOperators.Contains(_current.Value))
         {
             var op = Consume(TokenType.Symbol).Value;
             var right = ParsePrimary();

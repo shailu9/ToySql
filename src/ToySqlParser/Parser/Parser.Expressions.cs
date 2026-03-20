@@ -7,7 +7,7 @@ public partial class Parser
 {
     // Parse expression (handles operator precedence)
     // Example: id = 5 AND name = 'john'
-    private Expression ParseExpression()
+    public Expression ParseExpression()
     {
         return ParseOrExpression();
     }

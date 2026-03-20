@@ -13,7 +13,8 @@ public class ParserTests
         var lexer = new Lexer.Lexer("SELECT name FROM users WHERE id = 5");
         var parser = new Parser.Parser(lexer);
 
-        var result = parser.Parse();
+        var result = parser.Parse() as SelectStatement;
+        result.Should().NotBeNull();
 
         result.Table.Should().Be("users");
         result.Columns.Should().ContainSingle().Which.Should().Be("name");
@@ -32,7 +33,7 @@ public class ParserTests
         var lexer = new Lexer.Lexer("SELECT name FROM users WHERE id = 5");
         var parser = new Parser.Parser(lexer);
 
-        var ast = parser.Parse();
+        var ast = parser.Parse() as SelectStatement;
 
         var json = JsonSerializer.Serialize(ast, new JsonSerializerOptions
         {
@@ -85,7 +86,8 @@ public class ParserTests
         var lexer = new Lexer.Lexer("SELECT id, name FROM users WHERE id = 5 AND name = 'john'");
         var parser = new Parser.Parser(lexer);
 
-        var result = parser.Parse();
+        var result = parser.Parse() as SelectStatement;
+        result.Should().NotBeNull();
 
         result.Columns.Should().BeEquivalentTo("id", "name");
 

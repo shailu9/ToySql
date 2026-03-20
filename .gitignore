@@ -34,6 +34,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+build_errors.txt
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -47,6 +48,7 @@ Generated\ Files/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+test_errors.txt
 
 # NUnit
 *.VisualState.xml

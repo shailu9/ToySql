@@ -39,22 +39,22 @@ public class ParserTests
             WriteIndented = true
         });
         // Core structure
-    json.Should().Contain(@"""Table"": ""users""");
-    json.Should().Contain(@"""Columns"": [");
-    json.Should().Contain(@"""name""");
+        json.Should().Contain(@"""Table"": ""users""");
+        json.Should().Contain(@"""Columns"": [");
+        json.Should().Contain(@"""name""");
 
-    // WHERE clause structure
-    json.Should().Contain(@"""Where"": {");
-    json.Should().Contain(@"""$type"": ""binary""");
+        // WHERE clause structure
+        json.Should().Contain(@"""Where"": {");
+        json.Should().Contain(@"""$type"": ""binary""");
 
-    // Left side
-    json.Should().Contain(@"""Name"": ""id""");
+        // Left side
+        json.Should().Contain(@"""Name"": ""id""");
 
-    // Operator
-    json.Should().Contain(@"""Op"": ""=""");
+        // Operator
+        json.Should().Contain(@"""Op"": ""=""");
 
-    // Right side
-    json.Should().Contain(@"""Value"": ""5""");
+        // Right side
+        json.Should().Contain(@"""Value"": ""5""");
     }
 
     [Fact]
@@ -104,5 +104,16 @@ public class ParserTests
         ((IdentifierExpression)right.Left).Name.Should().Be("name");
         right.Op.Should().Be("=");
         ((LiteralExpression)right.Right).Value.Should().Be("john");
+    }
+
+    [Fact]
+    public void Parser_Should_Throw_On_Chained_Comparison()
+    {
+        var lexer = new Lexer.Lexer("SELECT * FROM users WHERE id = 5 = 6");
+        var parser = new Parser.Parser(lexer);
+
+        Action act = () => parser.Parse();
+
+        act.Should().Throw<Exception>().WithMessage("Unexpected token*");
     }
 }

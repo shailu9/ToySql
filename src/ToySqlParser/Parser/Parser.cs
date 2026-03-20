@@ -2,7 +2,12 @@ using ToySqlParser.Lexer;
 using ToySqlParser.Parser.AST;
 
 namespace ToySqlParser.Parser;
-public class Parser
+
+// <summary>
+// The Parser class is responsible for parsing the input SQL string into an Abstract Syntax Tree (AST).
+// It uses the Lexer to tokenize the input and then recursively parses the tokens into an AST.
+// </summary>
+public partial class Parser
 {
     private readonly Lexer.Lexer _lexer;
     private Token _current;
@@ -13,6 +18,8 @@ public class Parser
         _current = _lexer.NextToken();
     }
 
+    // Check if current token matches the expected type and optional value
+    // Example: Match(TokenType.Keyword, "SELECT")
     private bool Match(TokenType type, string? value = null)
     {
         if (_current.Type != type)
@@ -21,6 +28,9 @@ public class Parser
             return false;
         return true;
     }
+
+    // Consume token and advance to next token
+    // Example: Consume(TokenType.Keyword, "SELECT")
     private Token Consume(TokenType type, string? value = null)
     {
         if (!Match(type, value))
@@ -31,6 +41,8 @@ public class Parser
         return token;
     }
 
+    // Parse select statement
+    // Example: SELECT id, name FROM users WHERE id = 5 AND name = 'john'
     public SelectStatement Parse()
     {
         Consume(TokenType.Keyword, "SELECT");
@@ -54,7 +66,8 @@ public class Parser
         return new SelectStatement(columns, table, where);
     }
 
-
+    // Parse columns (identifiers or *) separated by commas
+    // Example: SELECT id, name, * FROM users
     private List<string> ParseColumns()
     {
         var columns = new List<string>();
@@ -83,71 +96,5 @@ public class Parser
 
         return columns;
     }
-    private Expression ParsePrimary()
-    {
-        if (Match(TokenType.Identifier))
-        {
-            var name = Consume(TokenType.Identifier).Value;
-            return new IdentifierExpression(name);
-        }
 
-        if (Match(TokenType.NumericLiteral))
-        {
-            var value = Consume(TokenType.NumericLiteral).Value;
-            return new LiteralExpression(value);
-        }
-
-        if (Match(TokenType.StringLiteral))
-        {
-            var value = Consume(TokenType.StringLiteral).Value;
-            return new LiteralExpression(value);
-        }
-        throw new Exception($"Unexpected token: {_current.Type} {_current.Value}");
-    }
-
-    private Expression ParseExpression()
-    {
-        return ParseOrExpression();
-    }
-
-    private Expression ParseOrExpression()
-    {
-        var left = ParseAndExpression();
-
-        while (Match(TokenType.Keyword, "OR"))
-        {
-            var op = Consume(TokenType.Keyword, "OR").Value;
-            var right = ParseAndExpression();
-            left = new BinaryExpression(left, op, right);
-        }
-
-        return left;
-    }
-
-    private Expression ParseAndExpression()
-    {
-        var left = ParseComparisonExpression();
-
-        while (Match(TokenType.Keyword, "AND"))
-        {
-            var op = Consume(TokenType.Keyword, "AND").Value;
-            var right = ParseComparisonExpression();
-            left = new BinaryExpression(left, op, right);
-        }
-
-        return left;
-    }
-
-    private Expression ParseComparisonExpression()
-    {
-        var left = ParsePrimary();
-
-        if (Match(TokenType.Symbol) && Operators.GetAllOperators.Contains(_current.Value))
-        {
-            var op = Consume(TokenType.Symbol).Value;
-            var right = ParsePrimary();
-            return new BinaryExpression(left, op, right);
-        }
-        return left;
-    }
 }

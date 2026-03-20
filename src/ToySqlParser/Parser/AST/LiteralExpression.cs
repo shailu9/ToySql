@@ -1,3 +1,6 @@
-﻿namespace ToySqlParser.Parser.AST;
+namespace ToySqlParser.Parser.AST;
 
-public record LiteralExpression(string Value) : Expression;
+public record LiteralExpression(string Value) : Expression
+{
+    public override T Accept<T>(IAstVisitor<T> visitor) => visitor.Visit(this);
+}

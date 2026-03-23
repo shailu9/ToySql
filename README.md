@@ -1,139 +1,161 @@
 # ToySql
 
-A minimal, extensible SQL query engine built from scratch to explore database internals, query planning, and execution models.
+A minimal SQL query engine built from scratch in C#, focused on understanding how databases parse, plan, and execute queries.
 
 ---
 
-## 🚀 Overview
+## 🚀 What This Project Is
 
-ToySql is a learning-driven project that evolves into a modular query engine with components inspired by real-world databases:
+ToySql is not just a parser.
 
-* SQL parsing → AST
-* Semantic validation
-* Logical query planning
-* Rule-based optimization
-* Execution engine (Volcano model)
-* Pluggable storage layer
+It is an evolving **query engine prototype** that models how real databases work internally:
+
+* SQL → Tokens → AST
+* AST → Logical Plan
+* Logical Plan → Execution
+* Execution → Results
 
 ---
 
 ## 🧠 Architecture
 
-```
-SQL
- ↓
-Lexer → Tokens
- ↓
-Parser → AST
- ↓
-Binder → Semantic Model
- ↓
-Logical Plan Builder
- ↓
-Optimizer (Visitor-based)
- ↓
+```text
+SQL Query
+   ↓
+Lexer (Tokenization)
+   ↓
+Parser (AST निर्माण)
+   ↓
+AST Visitors
+   ↓
+Logical Plan
+   ↓
 Execution Engine
- ↓
-Storage Engine
+   ↓
+Storage
 ```
 
 ---
 
-## 🧩 Core Components
+## 🧩 Current Capabilities
 
-* **Lexer & Parser**
-  Converts SQL into an Abstract Syntax Tree (AST)
+* SQL Lexer
+* SQL Parser (SELECT support)
+* AST generation
 
-* **AST + Visitor Pattern**
-  Enables extensible operations like:
-
-  * Printing
-  * Validation
-  * Plan generation
-
-* **Logical Plan**
-  Query represented as operators:
-
-  ```
-  Scan → Filter → Projection
-  ```
-
-* **Execution Engine**
-  Iterator-based (Volcano model):
-
-  ```csharp
-  interface IOperator
-  {
-      Row Next();
-  }
-  ```
-
-* **Storage Layer**
-  Pluggable interface (file-based / in-memory / custom engine)
-
----
-
-## 🔁 Example Flow
+Example:
 
 ```sql
 SELECT id, name FROM users WHERE id = 1;
 ```
 
-Execution pipeline:
+Produces an AST representing:
 
+* Projection → `id, name`
+* Source → `users`
+* Filter → `id = 1`
+
+---
+
+## 🔁 Next Steps (Active Development)
+
+### 1. Visitor Pattern (Core Focus)
+
+* AST traversal without modifying node classes
+* Planned visitors:
+
+  * `PrintVisitor`
+  * `ValidationVisitor`
+  * `LogicalPlanVisitor`
+
+---
+
+### 2. Logical Plan
+
+Transform AST into execution-friendly operators:
+
+```text
+Scan(users)
+   ↓
+Filter(id = 1)
+   ↓
+Projection(id, name)
 ```
-Parse → AST → Logical Plan → Optimize → Execute → Result
+
+---
+
+### 3. Execution Engine
+
+Iterator-based model:
+
+```csharp
+interface IOperator
+{
+    Row Next();
+}
 ```
 
----
+Planned operators:
 
-## 🧪 Goals
-
-* Understand how databases work internally
-* Implement clean architecture for query engines
-* Explore Visitor pattern in real systems
-* Build a foundation for future extensions:
-
-  * Indexing
-  * Query optimization
-  * Distributed execution
+* TableScan
+* Filter
+* Projection
 
 ---
 
-## 📌 Current Status
+### 4. Storage Layer
 
-* [x] Basic Lexer
-* [x] SQL Parser (SELECT)
-* [ ] AST Visitors
-* [ ] Logical Plan
-* [ ] Execution Engine
-* [ ] Storage Integration
-* [ ] CLI (REPL)
+Pluggable storage abstraction:
+
+* File-based (JSON/Binary)
+* In-memory
+* Future: custom engine
 
 ---
 
-## 🛣️ Roadmap
+## 🧪 Long-Term Vision
 
-* AST → Logical Plan transformation
-* Rule-based optimizer (filter pushdown)
-* Execution engine with operators
-* Integration with custom storage engine
-* `EXPLAIN` query support
-
----
-
-## 🧱 Tech Stack
-
-* C# (.NET)
-* Clean architecture principles
-* Visitor pattern for extensibility
+* Query optimization (rule-based)
+* Filter pushdown
+* Index support
+* `EXPLAIN` query plans
+* CLI (REPL interface)
 
 ---
 
-## 📖 Why This Project?
+## 📌 Why This Project
 
-Most developers use databases. Few understand how they work.
+Most developers use SQL.
+
+Few understand:
+
+* How queries are parsed
+* How plans are generated
+* How execution pipelines work
 
 ToySql is an attempt to bridge that gap by building a query engine from first principles.
 
 ---
+
+## 🛠 Tech Stack
+
+* C#
+* .NET
+* Clean Architecture (modular design)
+* Visitor Pattern (for extensibility)
+
+---
+
+## 📖 Inspiration
+
+Inspired by:
+
+* Database internals
+* Compiler design patterns
+* Query engines like PostgreSQL / SQLite
+
+---
+
+## 🤝 Contributions
+
+This is a learning-focused project, but suggestions and improvements are welcome.

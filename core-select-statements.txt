@@ -1,0 +1,46 @@
+POSTGRESQL SELECT CHECKLIST
+===========================
+
+[ ] BASIC SELECTION
+    - SELECT * FROM table; (All columns)
+    - SELECT col1, col2 FROM table; (Specific columns)
+    - SELECT col1 AS alias_name FROM table; (Renaming columns)
+    - SELECT DISTINCT col1 FROM table; (Unique values only)
+
+[ ] FILTERING & SORTING
+    - WHERE col1 = 'value'; (Exact match)
+    - WHERE col1 > 10 AND col2 < 50; (Logical operators)
+    - WHERE col1 IN ('val1', 'val2'); (List matching)
+    - WHERE col1 BETWEEN 10 AND 20; (Range matching)
+    - WHERE col1 IS NULL; (Check for empty values)
+    - WHERE col1 LIKE '%pattern%'; (Case-sensitive pattern)
+    - WHERE col1 ILIKE '%pattern%'; (Case-insensitive pattern)
+    - ORDER BY col1 ASC, col2 DESC; (Sorting)
+    - LIMIT 10 OFFSET 5; (Pagination)
+
+[ ] AGGREGATION & GROUPING
+    - SELECT COUNT(*), SUM(col1), AVG(col1), MIN(col1), MAX(col1); (Math)
+    - GROUP BY col1; (Categorizing results)
+    - HAVING COUNT(*) > 1; (Filtering grouped results)
+
+[ ] JOINS (RELATIONAL)
+    - INNER JOIN table2 ON table1.id = table2.fk; (Matching records)
+    - LEFT JOIN table2 ON table1.id = table2.fk; (All left + matching right)
+    - RIGHT JOIN table2 ON table1.id = table2.fk; (All right + matching left)
+    - FULL OUTER JOIN table2 ON table1.id = table2.fk; (All records from both)
+    - CROSS JOIN table2; (Cartesian product)
+
+[ ] SUBQUERIES & CTES
+    - WHERE col1 IN (SELECT id FROM table2); (Basic subquery)
+    - WITH cte_name AS (SELECT...) SELECT * FROM cte_name; (Common Table Expression)
+
+[ ] CONDITIONAL & DATA TYPES
+    - CASE WHEN condition THEN 'A' ELSE 'B' END; (If/Then logic)
+    - col1::target_type; (Type casting, e.g., price::text)
+    - SELECT json_col->>'key' FROM table; (JSONB extraction)
+
+[ ] SET OPERATIONS
+    - SELECT... UNION SELECT... (Combine results, remove duplicates)
+    - SELECT... UNION ALL SELECT... (Combine results, keep duplicates)
+    - SELECT... INTERSECT SELECT... (Only overlapping results)
+    - SELECT... EXCEPT SELECT... (Results in first but not second)

@@ -45,23 +45,55 @@ public partial class Parser
     }
 
     // Parse comparison expressions
-    // Example: id = 5
+    // Example: id = 5, price > 100
     private Expression ParseComparisonExpression()
     {
-        var left = ParsePrimary();
+        var left = ParseAdditiveExpression();
 
-        if (Match(TokenType.Symbol) && Operators.GetAllOperators.Contains(_current.Value))
+        if (Match(TokenType.Symbol) && Operators.ComparisonOperators.Contains(_current.Value))
         {
             var op = Consume(TokenType.Symbol).Value;
-            var right = ParsePrimary();
+            var right = ParseAdditiveExpression();
             return new BinaryExpression(left, op, right);
         }
 
         return left;
     }
 
+    // Parse additive expressions  (+, -)
+    // Example: price + 10, total - discount
+    private Expression ParseAdditiveExpression()
+    {
+        var left = ParseMultiplicativeExpression();
+
+        while (Match(TokenType.Symbol) && Operators.AdditiveOperators.Contains(_current.Value))
+        {
+            var op = Consume(TokenType.Symbol).Value;
+            var right = ParseMultiplicativeExpression();
+            left = new BinaryExpression(left, op, right);
+        }
+
+        return left;
+    }
+
+    // Parse multiplicative expressions (*, /)
+    // Example: price * 1.1, qty / 2
+    private Expression ParseMultiplicativeExpression()
+    {
+        var left = ParsePrimary();
+
+        while (Match(TokenType.Symbol) && Operators.MultiplicativeOperators.Contains(_current.Value))
+        {
+            var op = Consume(TokenType.Symbol).Value;
+            var right = ParsePrimary();
+            left = new BinaryExpression(left, op, right);
+        }
+
+        return left;
+    }
+
     // Parse primary expressions (identifiers, numeric literals, string literals)
-    // Example: id, 5, 'john'
+    // Example: id, 5, 1.1, 'john'
     private Expression ParsePrimary()
     {
         if (Match(TokenType.Identifier))

@@ -1,3 +1,6 @@
+using ToySqlParser.Extenssions;
+
+
 namespace ToySqlParser.Lexer;
 
 // <summary>
@@ -28,10 +31,11 @@ public class Lexer
     private static readonly Dictionary<string, TokenType> Keywords = new(StringComparer.OrdinalIgnoreCase)
     {
         { "SELECT", TokenType.Keyword },
-        { "FROM", TokenType.Keyword },
-        { "WHERE", TokenType.Keyword },
-        { "AND", TokenType.Keyword },
-        { "OR", TokenType.Keyword }
+        { "FROM",   TokenType.Keyword },
+        { "WHERE",  TokenType.Keyword },
+        { "AND",    TokenType.Keyword },
+        { "OR",     TokenType.Keyword },
+        { "AS",     TokenType.Keyword },   // alias keyword
     };
 
     public Lexer(string input)
@@ -40,7 +44,8 @@ public class Lexer
     }
 
     private char CurrentChar => _position < _input.Length ? _input[_position] : '\0';
-    private bool IsAtEnd => _position >= _input.Length;
+    private char PeekNext    => _position + 1 < _input.Length ? _input[_position + 1] : '\0';
+    private bool IsAtEnd     => _position >= _input.Length;
 
     private void Advance() => _position++;
 
@@ -63,7 +68,15 @@ public class Lexer
         if (char.IsDigit(CurrentChar))
             return ParseNumericLiteral();
 
-        if (CurrentChar is '*' or ',' or '=')
+        // Two-character symbol: !=, >=, <=
+        if (CurrentChar == '!' && PeekNext == '=')
+            return ParseSymbolN(2);
+        if (CurrentChar == '>' && PeekNext == '=')
+            return ParseSymbolN(2);
+        if (CurrentChar == '<' && PeekNext == '=')
+            return ParseSymbolN(2);
+
+        if (CurrentChar is '*' or ',' or '=' or '+' or '-' or '/' or '>' or '<')
             return ParseSymbol();
 
         throw new Exception($"Unexpected character: {CurrentChar}");
@@ -96,7 +109,7 @@ public class Lexer
     {
         int start = _position;
 
-        while (!IsAtEnd && char.IsLetterOrDigit(CurrentChar))
+        while (!IsAtEnd && CurrentChar.IsLetterOrDigitOrUnderscore())
             Advance();
 
         string word = _input.Substring(start, _position - start);
@@ -114,6 +127,14 @@ public class Lexer
         while (!IsAtEnd && char.IsDigit(CurrentChar))
             Advance();
 
+        // Consume optional decimal fraction (e.g. 1.1, 3.14)
+        if (!IsAtEnd && CurrentChar == '.' && char.IsDigit(PeekNext))
+        {
+            Advance(); // consume '.'
+            while (!IsAtEnd && char.IsDigit(CurrentChar))
+                Advance();
+        }
+
         return new Token(TokenType.NumericLiteral, _input.Substring(start, _position - start));
     }
 
@@ -122,5 +143,12 @@ public class Lexer
         char symbol = CurrentChar;
         Advance();
         return new Token(TokenType.Symbol, symbol.ToString());
+    }
+
+    private Token ParseSymbolN(int length)
+    {
+        string symbol = _input.Substring(_position, length);
+        _position += length;
+        return new Token(TokenType.Symbol, symbol);
     }
 }

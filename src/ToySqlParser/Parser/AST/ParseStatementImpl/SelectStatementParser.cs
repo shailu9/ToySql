@@ -32,23 +32,46 @@ public class SelectStatementParser : IStatementParser
     }
 
     /// <summary>
-    /// Parses the columns of a select statement.
+    /// Parses the column projection list of a SELECT statement.
+    /// Each column is one of: wildcard (*), bare expression, or aliased expression (expr AS alias).
+    /// Note: * is only treated as wildcard when it is the sole token in a column position;
+    /// within an expression (e.g. price * 1.1) it is handled as multiplication by ParseExpression.
     /// </summary>
-    /// <param name="context">The parser context.</param>
-    /// <returns>The list of columns.</returns>
-    private List<string> ParseColumns(Parser context){
-        var columns = new List<string>();
-        while(true){
-            if(context.Match(TokenType.Identifier)){
-                columns.Add(context.Consume(TokenType.Identifier).Value);
+    private List<SelectColumn> ParseColumns(Parser context)
+    {
+        var columns = new List<SelectColumn>();
+        while (true)
+        {
+            SelectColumn column;
+
+            // Wildcard: * must appear alone as the column item (not preceded by an expression)
+            if (context.Match(TokenType.Symbol, "*"))
+            {
+                context.Consume(TokenType.Symbol, "*");
+                column = new WildcardColumn();
             }
-            else if(context.Match(TokenType.Symbol, "*")){
-                columns.Add(context.Consume(TokenType.Symbol, "*").Value);
+            else
+            {
+                // Parse the projection expression (supports arithmetic, identifiers, literals)
+                var expr = context.ParseExpression();
+
+                // Optional alias: expr AS alias
+                if (context.Match(TokenType.Keyword, "AS"))
+                {
+                    context.Consume(TokenType.Keyword, "AS");
+                    var alias = context.Consume(TokenType.Identifier).Value;
+                    column = new AliasedColumn(expr, alias);
+                }
+                else
+                {
+                    column = new ExpressionColumn(expr);
+                }
             }
-            else{
-                throw new Exception("Expected column name or *");
-            }
-            if(context.Match(TokenType.Symbol, ",")){
+
+            columns.Add(column);
+
+            if (context.Match(TokenType.Symbol, ","))
+            {
                 context.Consume(TokenType.Symbol, ",");
                 continue;
             }
@@ -56,4 +79,4 @@ public class SelectStatementParser : IStatementParser
         }
         return columns;
     }
-}
+}

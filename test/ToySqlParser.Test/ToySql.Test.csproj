@@ -18,11 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\..\src\ToySql.Parser\ToySql.Parser.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ToySqlParser\ToySqlParser.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
 </Project>

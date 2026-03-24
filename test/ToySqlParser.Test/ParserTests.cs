@@ -1,7 +1,8 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using FluentAssertions;
-using ToySqlParser.Parser.AST;
+using ToySql.Lexer;
+using ToySql.Parser;
+using ToySql.Parser.AST;
 
 namespace ToySqlParser.Test;
 
@@ -10,8 +11,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Select_With_Where()
     {
-        var lexer = new Lexer.Lexer("SELECT name FROM users WHERE id = 5");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT name FROM users WHERE id = 5");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -31,8 +32,8 @@ public class ParserTests
     [Fact]
     public void Parser_Snapshot_Test()
     {
-        var lexer = new Lexer.Lexer("SELECT name FROM users WHERE id = 5");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT name FROM users WHERE id = 5");
+        var parser = new Parser(lexer);
 
         var ast = parser.Parse() as SelectStatement;
 
@@ -61,8 +62,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Throw_On_Invalid_Query()
     {
-        var lexer = new Lexer.Lexer("SELECT FROM users");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT FROM users");
+        var parser = new Parser(lexer);
 
         Action act = () => parser.Parse();
 
@@ -72,8 +73,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Throw_On_Trailing_Tokens()
     {
-        var lexer = new Lexer.Lexer("SELECT name FROM users WHERE id = 5 INVALID");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT name FROM users WHERE id = 5 INVALID");
+        var parser = new Parser(lexer);
 
         Action act = () => parser.Parse();
 
@@ -83,8 +84,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Select_With_And()
     {
-        var lexer = new Lexer.Lexer("SELECT id, name FROM users WHERE id = 5 AND name = 'john'");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT id, name FROM users WHERE id = 5 AND name = 'john'");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -113,8 +114,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Throw_On_Chained_Comparison()
     {
-        var lexer = new Lexer.Lexer("SELECT * FROM users WHERE id = 5 = 6");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT * FROM users WHERE id = 5 = 6");
+        var parser = new Parser(lexer);
 
         Action act = () => parser.Parse();
 
@@ -126,8 +127,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Single_Alias()
     {
-        var lexer = new Lexer.Lexer("SELECT id AS emp_id FROM Employees");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT id AS emp_id FROM Employees");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -140,8 +141,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Multiple_Aliases()
     {
-        var lexer = new Lexer.Lexer("SELECT id AS emp_id, name AS emp_name FROM Employees");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT id AS emp_id, name AS emp_name FROM Employees");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -159,8 +160,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Wildcard_Column()
     {
-        var lexer = new Lexer.Lexer("SELECT * FROM Employees");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT * FROM Employees");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -171,8 +172,8 @@ public class ParserTests
     [Fact]
     public void Parser_Should_Parse_Mixed_Columns()
     {
-        var lexer = new Lexer.Lexer("SELECT id, name AS emp_name FROM Employees");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT id, name AS emp_name FROM Employees");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -189,8 +190,8 @@ public class ParserTests
     public void Parser_Should_Parse_Arithmetic_Alias()
     {
         // SELECT price * 1.1 AS new_price FROM products WHERE id = 5
-        var lexer = new Lexer.Lexer("SELECT price * 1.1 AS new_price FROM products WHERE id = 5");
-        var parser = new Parser.Parser(lexer);
+        var lexer = new Tokenizer("SELECT price * 1.1 AS new_price FROM products WHERE id = 5");
+        var parser = new Parser(lexer);
 
         var result = parser.Parse() as SelectStatement;
         result.Should().NotBeNull();
@@ -208,4 +209,4 @@ public class ParserTests
         where.Op.Should().Be("=");
         ((LiteralExpression)where.Right).Value.Should().Be("5");
     }
-}
+}

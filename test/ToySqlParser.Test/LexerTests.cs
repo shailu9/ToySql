@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ToySqlParser.Lexer;
+using ToySql.Lexer;
 
 namespace ToySqlParser.Test;
 
@@ -8,7 +8,7 @@ public class LexerTests
     [Fact]
     public void Lexer_Should_Tokenize_Select_Query()
     {
-        var lexer = new Lexer.Lexer("SELECT name FROM users");
+        var lexer = new Tokenizer("SELECT name FROM users");
 
         var tokens = new List<Token>();
         Token token;
@@ -33,7 +33,7 @@ public class LexerTests
     [Fact]
     public void Lexer_Should_Tokenize_And_Or()
     {
-        var lexer = new Lexer.Lexer("AND OR");
+        var lexer = new Tokenizer("AND OR");
         var tokens = new List<Token>();
         Token token;
         do

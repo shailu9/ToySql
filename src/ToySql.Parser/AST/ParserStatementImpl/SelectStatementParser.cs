@@ -16,6 +16,13 @@ public class SelectStatementParser : IStatementParser
     public Node Parse(Parser context)
     {
         context.Consume(TokenType.Keyword, "SELECT");
+        // DISTINCT Flag - just a boolean consumed if present
+        bool isDistinct = false;
+        if(context.Match(TokenType.Keyword, "DISTINCT"))
+        {
+            context.Consume(TokenType.Keyword, "DISTINCT");
+            isDistinct = true;
+        }
         var columns = ParseColumns(context);
         context.Consume(TokenType.Keyword, "FROM");
         var table = context.Consume(TokenType.Identifier).Value;
@@ -26,11 +33,18 @@ public class SelectStatementParser : IStatementParser
 
             where = context.ParseExpression();
         }
+        // ORDER BY clause - optional
+        List<OrderByColumn> OrderBy = null;
+        if(context.Match(TokenType.Keyword,"ORDER")){
+            context.Consume(TokenType.Keyword,"ORDER");
+            context.Consume(TokenType.Keyword,"BY");
+            OrderBy = ParseOrderByColumns(context);
+        }
         if (!context.Match(TokenType.EndOfFile))
         {
             throw new Exception($"Unexpected token: {context.Current.Type} {context.Current.Value}");
         }
-        return new SelectStatement(columns, table, where);
+        return new SelectStatement(columns, table, where!,isDistinct,OrderBy!);
     }
 
     /// <summary>
@@ -72,6 +86,37 @@ public class SelectStatementParser : IStatementParser
 
             columns.Add(column);
 
+            if (context.Match(TokenType.Symbol, ","))
+            {
+                context.Consume(TokenType.Symbol, ",");
+                continue;
+            }
+            break;
+        }
+        return columns;
+    }
+
+    /// <summary>
+    /// Parses the order by column list of a SELECT statement.
+    /// </summary>
+    /// <param name="context">The parser context.</param>
+    /// <returns>The parsed order by column list.</returns>
+    private List<OrderByColumn> ParseOrderByColumns(Parser context){
+        var columns = new List<OrderByColumn>();
+        while (true)
+        {
+            var expr = context.ParseExpression();
+            bool ascending = true;
+            if (context.Match(TokenType.Keyword, "DESC"))
+            {
+                context.Consume(TokenType.Keyword, "DESC");
+                ascending = false;
+            }
+            else if (context.Match(TokenType.Keyword, "ASC"))
+            {
+                context.Consume(TokenType.Keyword, "ASC");
+            }
+            columns.Add(new OrderByColumn(expr, ascending));
             if (context.Match(TokenType.Symbol, ","))
             {
                 context.Consume(TokenType.Symbol, ",");

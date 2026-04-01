@@ -209,4 +209,46 @@ public class ParserTests
         where.Op.Should().Be("=");
         ((LiteralExpression)where.Right).Value.Should().Be("5");
     }
+    [Fact]
+    public void Parser_Should_Parse_Order_By()
+    {
+        var lexer = new Tokenizer("SELECT name FROM users ORDER BY name DESC, id ASC");
+        var parser = new Parser(lexer);
+
+        var result = parser.Parse() as SelectStatement;
+        result.Should().NotBeNull();
+        result.OrderBy.Should().HaveCount(2);
+
+        var o1 = result.OrderBy[0];
+        ((IdentifierExpression)o1.Expression).Name.Should().Be("name");
+        o1.Ascending.Should().BeFalse();
+
+        var o2 = result.OrderBy[1];
+        ((IdentifierExpression)o2.Expression).Name.Should().Be("id");
+        o2.Ascending.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_Should_Parse_Limit_And_Offset()
+    {
+        var lexer = new Tokenizer("SELECT name FROM users LIMIT 10 OFFSET 5");
+        var parser = new Parser(lexer);
+
+        var result = parser.Parse() as SelectStatement;
+        result.Should().NotBeNull();
+        result.Limit.Should().Be(10);
+        result.Offset.Should().Be(5);
+    }
+
+    [Fact]
+    public void Parser_Should_Parse_Limit_Only()
+    {
+        var lexer = new Tokenizer("SELECT name FROM users LIMIT 20");
+        var parser = new Parser(lexer);
+
+        var result = parser.Parse() as SelectStatement;
+        result.Should().NotBeNull();
+        result.Limit.Should().Be(20);
+        result.Offset.Should().BeNull();
+    }
 }

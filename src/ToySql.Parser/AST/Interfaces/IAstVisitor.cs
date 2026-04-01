@@ -1,4 +1,4 @@
-﻿namespace ToySql.Parser.AST.Interfaces;
+namespace ToySql.Parser.AST.Interfaces;
 
 public interface IAstVisitor<out T>
 {
@@ -6,4 +6,8 @@ public interface IAstVisitor<out T>
     T Visit(BinaryExpression expression);
     T Visit(IdentifierExpression expression);
     T Visit(LiteralExpression expression);
+    T Visit(OrderByColumn orderByColumn);
+    T Visit(WildcardColumn wildcardColumn);
+    T Visit(ExpressionColumn expressionColumn);
+    T Visit(AliasedColumn aliasedColumn);
 }

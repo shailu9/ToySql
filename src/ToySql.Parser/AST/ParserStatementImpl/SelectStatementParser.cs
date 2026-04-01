@@ -1,4 +1,4 @@
-﻿using ToySql.Lexer;
+using ToySql.Lexer;
 using ToySql.Parser.AST.Interfaces;
 
 namespace ToySql.Parser.AST.ParserStatementImpl;
@@ -35,16 +35,35 @@ public class SelectStatementParser : IStatementParser
         }
         // ORDER BY clause - optional
         List<OrderByColumn> OrderBy = null;
-        if(context.Match(TokenType.Keyword,"ORDER")){
-            context.Consume(TokenType.Keyword,"ORDER");
-            context.Consume(TokenType.Keyword,"BY");
+        if (context.Match(TokenType.Keyword, "ORDER"))
+        {
+            context.Consume(TokenType.Keyword, "ORDER");
+            context.Consume(TokenType.Keyword, "BY");
             OrderBy = ParseOrderByColumns(context);
         }
+
+        // LIMIT clause - optional
+        int? limit = null;
+        if (context.Match(TokenType.Keyword, "LIMIT"))
+        {
+            context.Consume(TokenType.Keyword, "LIMIT");
+            limit = int.Parse(context.Consume(TokenType.NumericLiteral).Value);
+        }
+
+        // OFFSET clause - optional
+        int? offset = null;
+        if (context.Match(TokenType.Keyword, "OFFSET"))
+        {
+            context.Consume(TokenType.Keyword, "OFFSET");
+            offset = int.Parse(context.Consume(TokenType.NumericLiteral).Value);
+        }
+
         if (!context.Match(TokenType.EndOfFile))
         {
             throw new Exception($"Unexpected token: {context.Current.Type} {context.Current.Value}");
         }
-        return new SelectStatement(columns, table, where!,isDistinct,OrderBy!);
+
+        return new SelectStatement(columns, table, where!, isDistinct, OrderBy!, limit, offset);
     }
 
     /// <summary>
